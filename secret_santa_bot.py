@@ -2,13 +2,27 @@ from telegram.ext import Application, MessageHandler, filters, CommandHandler, C
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 import uuid
 
+def assign_gifters_and_receivers(members):
+    assignments = {}
+    for i in range(len(members)):
+        gifter = members[i]
+        receiver = members[(i + 1) % len(members)]  # Use modulo to loop back to the first member
+        assignments[gifter] = receiver
+    return assignments
+
 
 # Dictionary to store group data
 groups = {}
 
 
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text('Hi! I am a Secret Santa Bot. I will help you to organize a Secret Santa event. To know more about me, type /info')
+    reply_keyboard = [['/start', '/create_group', '/join_group', '/info']]
+    markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+    await update.message.reply_text(
+        'Hi! I am a Secret Santa Bot. I will help you to organize a Secret Santa event. '
+        'To know more about me, type /info',
+        reply_markup=markup
+    )
 
 async def info(update: Update, context: CallbackContext):
     await update.message.reply_text(
@@ -21,7 +35,6 @@ async def info(update: Update, context: CallbackContext):
 
 
 
-
 ADMIN_NAME = 0
 GROUP_NAME = 1
 ADMIN_GIFT = 2
@@ -30,7 +43,7 @@ async def create_group(update: Update, context: CallbackContext):
     group_id = str(uuid.uuid4())
     admin_id = update.effective_user.id
     context.user_data["group_id"] = group_id
-    groups[group_id] = {"admin": admin_id, "members": [admin_id], "admin_name": "", "group_name": "", "gift": []}
+    groups[group_id] = {"admin": admin_id, "members": [admin_id], "admin_name": "", "group_name": "", "gift": [], "assignments": {} }
     await update.message.reply_text("Enter the your name as a Host:")
     return ADMIN_NAME
 
@@ -95,7 +108,7 @@ async def take_id(update: Update, context: CallbackContext):
             await update.message.reply_text("You are already a member of this group")
     else:
         await update.message.reply_text("Invalid group ID")
-        
+
     print(groups)
     return TAKE_GIFT
 
@@ -120,7 +133,17 @@ join_conv_handler = ConversationHandler(
 )
 
 
-
+async def assign_gift(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+    group_id = context.user_data["group_id"]
+    if user_id == groups[group_id]["admin"]:
+        await update.message.reply_text("You are not a member of this group")
+        return ConversationHandler.END
+    members = groups[group_id]["members"]
+    assignments = assign_gifters_and_receivers(members)
+    groups[group_id]["assignments"] = assignments
+    await update.message.reply_text("Gifts assigned successfully!")
+    return ConversationHandler.END
 
 def main():
     bot_token = '6459322939:AAGdDl0kK0RwWtQhun4HMqe2TNCajb8ASAQ'
@@ -131,6 +154,7 @@ def main():
     # Configure the command handlers
     app.add_handler(CommandHandler('start', start))
     app.add_handler(CommandHandler('info', info))
+    app.add_handler(CommandHandler('assign_gift', assign_gift))
     # app.add_handler(CommandHandler('create_group', create_group))
     # app.add_handler(CommandHandler('join_group', join_group))
     
