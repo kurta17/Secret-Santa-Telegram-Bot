@@ -29,9 +29,12 @@ async def info(update: Update, context: CallbackContext):
         'Welcome to the Secret Santa Bot!\n\n'
         'I will help you to organize a Secret Santa event. Here is how you can use me:\n\n'
         '/start - Start a new Secret Santa group\n'
-        '/create_group <admin> - Create a new Secret Santa group\n'
-        '/join_group <group_id> - Join an existing Secret Santa group using the provided group ID\n'
-    )
+        '/create_group - Create a new Secret Santa group\n'
+        '/join_group - Join an existing Secret Santa group\n'
+        '/info - Get information about the bot\n'
+        '/assign_gift - Assign gifts to the members of the group\n'
+
+)
 
 
 
@@ -103,7 +106,7 @@ async def take_id(update: Update, context: CallbackContext):
         if update.effective_user.id not in groups[group_id]["members"]:
             groups[group_id]["members"].append(update.effective_user.id)
             context.user_data["group_id"] = group_id
-            await update.message.reply_text(f"What gift do you want to recive?")
+            await update.message.reply_text(f"What gift do you want to receive?")
         else:
             await update.message.reply_text("You are already a member of this group")
     else:
@@ -132,18 +135,26 @@ join_conv_handler = ConversationHandler(
     fallbacks=[CommandHandler('cancel', cancel)]
 )
 
-
 async def assign_gift(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
     group_id = context.user_data["group_id"]
-    if user_id == groups[group_id]["admin"]:
+    if user_id != groups[group_id]["admin"]:
         await update.message.reply_text("You are not a member of this group")
         return ConversationHandler.END
     members = groups[group_id]["members"]
+    gifts = groups[group_id]["gift"]
     assignments = assign_gifters_and_receivers(members)
     groups[group_id]["assignments"] = assignments
+    for gifter, receiver in assignments.items():
+        receiver_index = members.index(receiver)
+        receiver_gift = gifts[receiver_index]
+        receiver_info = await context.bot.get_chat(receiver)
+        receiver_name = receiver_info.first_name
+        message = f"Hello, you are giving a gift to {receiver_name}. They would like to receive: {receiver_gift}."
+        await context.bot.send_message(gifter, message)
     await update.message.reply_text("Gifts assigned successfully!")
     return ConversationHandler.END
+
 
 def main():
     bot_token = '6459322939:AAGdDl0kK0RwWtQhun4HMqe2TNCajb8ASAQ'
