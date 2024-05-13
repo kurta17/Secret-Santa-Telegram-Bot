@@ -6,7 +6,7 @@ def assign_gifters_and_receivers(members):
     assignments = {}
     for i in range(len(members)):
         gifter = members[i]
-        receiver = members[(i + 1) % len(members)] 
+        receiver = members[(i + 1) % len(members)]
         assignments[gifter] = receiver
     return assignments
 
@@ -73,7 +73,7 @@ async def take_gift(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 
-    
+
 async def cancel(update: Update, context: CallbackContext):
     await update.message.reply_text('Operation cancelled.')
     return ConversationHandler.END
@@ -97,7 +97,7 @@ TAKE_GIFT = 1
 async def join_group(update: Update, context: CallbackContext):
     await update.message.reply_text("Enter the group ID:")
     return TAKE_ID
-    
+
 async def take_id(update: Update, context: CallbackContext):
     group_id = update.message.text
     if group_id in groups:
@@ -165,11 +165,11 @@ def main():
     app.add_handler(CommandHandler('assign_gift', assign_gift))
     # app.add_handler(CommandHandler('create_group', create_group))
     # app.add_handler(CommandHandler('join_group', join_group))
-    
+
     # Start the bot
     app.run_polling()
 
-    
+
 
 if __name__ == '__main__':
     main()

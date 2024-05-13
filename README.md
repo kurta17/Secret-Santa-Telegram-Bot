@@ -41,5 +41,3 @@ python bot.py
 2. Follow the bot's instructions to create a new Secret Santa group or join an existing one.
 3. Once the group is set up and participants have joined, the group administrator can manage the group and assign gift recipients.
 4. Participants can mark when they have prepared their gifts using the provided commands.
-
-
