@@ -2,8 +2,6 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 
 async def send_invite(update: Update, context: CallbackContext):
-    # Manually created group link
-    group_link = "https://t.me/Secret_Santa_KK_bot"
 
     keyboard = [
         [

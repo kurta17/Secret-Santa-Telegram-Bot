@@ -1,17 +1,17 @@
 from telegram.ext import Application, MessageHandler, filters, CommandHandler, CallbackContext,ConversationHandler
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, ReplyKeyboardMarkup
 import uuid
 
 def assign_gifters_and_receivers(members):
     assignments = {}
     for i in range(len(members)):
         gifter = members[i]
-        receiver = members[(i + 1) % len(members)]  # Use modulo to loop back to the first member
+        receiver = members[(i + 1) % len(members)] 
         assignments[gifter] = receiver
     return assignments
 
 
-# Dictionary to store group data
+# Dict to store group data
 groups = {}
 
 
@@ -66,7 +66,6 @@ async def group_name(update: Update, context: CallbackContext):
 
 async def take_gift(update: Update, context: CallbackContext):
     gift = update.message.text
-    user_id = update.effective_user.id
     group_id = context.user_data["group_id"]
     groups[group_id]["gift"].append(gift)
     print(groups)
@@ -96,7 +95,6 @@ TAKE_GIFT = 1
 
 
 async def join_group(update: Update, context: CallbackContext):
-    user_id = update.effective_user.id
     await update.message.reply_text("Enter the group ID:")
     return TAKE_ID
     
@@ -106,7 +104,7 @@ async def take_id(update: Update, context: CallbackContext):
         if update.effective_user.id not in groups[group_id]["members"]:
             groups[group_id]["members"].append(update.effective_user.id)
             context.user_data["group_id"] = group_id
-            await update.message.reply_text(f"What gift do you want to receive?")
+            await update.message.reply_text("What gift do you want to receive?")
         else:
             await update.message.reply_text("You are already a member of this group")
     else:
@@ -117,11 +115,10 @@ async def take_id(update: Update, context: CallbackContext):
 
 async def take_gift_user(update: Update, context: CallbackContext):
     gift = update.message.text
-    user_id = update.effective_user.id
     group_id = context.user_data["group_id"]
     groups[group_id]["gift"].append(gift)
     print(groups)
-    await update.message.reply_text(f'Wait until the group admin assigns the gifts to the members')
+    await update.message.reply_text('Wait until the group admin assigns the gifts to the members')
     return ConversationHandler.END
 
 
